@@ -1,0 +1,2 @@
+1. (solved) cannot run env in myShell, and haven't tested if export really works
+2. cannot run clear in myShell
