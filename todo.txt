@@ -1,2 +1,15 @@
 1. (solved) cannot run env in myShell, and haven't tested if export really works
-2. cannot run clear in myShell
+2. (solved) cannot run clear in myShell
+3. (solved) https://stackoverflow.com/questions/17463108/execl-in-child-process-doesnt-end
+4. myShell:/home/yg95/ece551/mp_miniproject$ cat README | ls
+commandShell.txt  main.cpp  Makefile  myShell  myShell.cpp  myShell.h  numerics.txt  README
+Program was killed by signal 13
+
+wrong: https://www.linuxquestions.org/questions/linux-newbie-8/terminated-by-signal-13-a-854501/
+5. after adding configCommandPipe() to runCdCommand:
+myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ cd .. | ls
+failed to redirect stdin: Bad file descriptor
+
+md....怎么4和5又没出现了......我出现幻觉了吗
+
+TODO: add pipe config to exit, cd, set, export

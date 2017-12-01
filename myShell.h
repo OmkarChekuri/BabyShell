@@ -7,22 +7,27 @@
 class MyShell {
 private:
   bool exitting;
-  std::string command;
+  std::string input;
+  std::vector<std::string> piped_commands;
   std::vector<std::string> commands;
   std::map<std::string, std::string> vars;
+  int * pipefd;
   std::string redirect_input_file;
   std::string redirect_output_file;
   std::string redirect_error_file;
   void setVar(std::string key, std::string value);
-  void parseCommand();
+  void parsePipedInput();
+  void parseCommand(int i);
   void evaluateVars();
   bool searchCommand();
-  void runExitCommands();
-  void runCdCommand();
-  void runSetCommand();
-  void runExportCommand();
-  void runCommand(char ** c_commands);
+  void runExitCommands(std::size_t command_index);
+  void runCdCommand(std::size_t command_index);
+  void runSetCommand(std::size_t command_index);
+  void runExportCommand(std::size_t command_index);
+  void runCommand(char ** c_commands, std::size_t command_index);
+  void runPipedCommands();
   void refresh();
+  void configCommandPipe(std::size_t command_index);
 public:
   MyShell();
   void execute();
