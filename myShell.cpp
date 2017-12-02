@@ -278,50 +278,82 @@ void MyShell::runCommand(std::size_t command_index) {
     std::cerr << "failed to create a child process: " << std::strerror(errno) << std::endl;
     exit(EXIT_FAILURE);
   } else if (forkResult == 0) { // in the child process
-    bool found = false;
-    std::vector<std::string>::iterator it;
-    std::string filename;
-    while((it = std::find(commands.begin(), commands.end(), "<")) != commands.end()) {
-      found = true;
-      filename = * (it + 1);
-      commands.erase(it); // remove "<" in MyShell::commands
-      commands.erase(it); // remove the input file name in MyShell::commands
+    std::string input_filename;
+    std::string output_filename;
+    std::string error_filename;
+    for (std::vector<std::string>::iterator it = commands.begin() + 1; it != commands.end(); ) {
+      std::string curr = *it;
+      if (curr.compare(0, 1, "<") == 0) {
+        if (curr.length() == 1) { // curr == "<"
+          if (it + 1 == commands.end()) {
+            std::cerr << "incorrect input format: < requires an input file" << std::endl;
+            return;
+          } else {
+            input_filename = *(it + 1);
+            commands.erase(it);
+            commands.erase(it); // no need for it++ again
+          }
+        } else { // curr starts with "<"
+          input_filename = curr.substr(1);
+          commands.erase(it); // no need for it++ again
+        }
+      } else if (curr.compare(0, 1, ">") == 0) {
+        if (curr.length() == 1) { // curr == ">"
+          if (it + 1 == commands.end()) {
+            std::cerr << "incorrect input format: > requires an output file" << std::endl;
+            return;
+          } else {
+            output_filename = *(it + 1);
+            commands.erase(it);
+            commands.erase(it); // no need for it++ again
+          }
+        } else { // curr starts with ">"
+          output_filename = curr.substr(1);
+          commands.erase(it); // no need for it++ again
+        }
+      } else if (curr.compare(0, 2, "2>") == 0) {
+        if (curr.length() == 2) { // curr == "2>"
+          if (it + 1 == commands.end()) {
+            std::cerr << "incorrect input format: 2< requires an output file" << std::endl;
+            return;
+          } else {
+            error_filename = *(it + 1);
+            commands.erase(it);
+            commands.erase(it); // no need for it++ again
+          }
+        } else { // curr starts with "2>"
+          if (curr.compare("2>&1") == 0) {
+            error_filename = output_filename;
+          } else {
+            error_filename = curr.substr(2);
+          }
+          commands.erase(it); // no need for it++ again
+        }
+      } else {
+        it++;
+      }
     }
-    if (found == true) {
+    if (!input_filename.empty()) {
       if (command_index != 0) { // only the first piped command can redirect stdin
         std::cerr << "cannot redirect stdin for a non-head command in pipe" << std::endl;
         // error = true;
         return;
       }
       close(0);
-      open(filename.c_str(), O_RDONLY);
+      open(input_filename.c_str(), O_RDONLY);
     }
-    found = false;
-    while((it = std::find(commands.begin(), commands.end(), ">")) != commands.end()) {
-      found = true;
-      filename = * (it + 1);
-      commands.erase(it); // remove ">" in MyShell::commands
-      commands.erase(it); // remove the output file name in MyShell::commands
-    }
-    if (found == true) {
+    if (!output_filename.empty()) {
       if (command_index != piped_commands.size() - 1) { // only the last piped command can redirect stdout
         std::cerr << "cannot redirect stdout for a non-end command in pipe" << std::endl;
         // error = true;
         return;
       }
       close(1);
-      open(filename.c_str(), O_WRONLY | O_CREAT, 0666); // set file permission
+      open(output_filename.c_str(), O_WRONLY | O_CREAT, 0666); // set file permission
     }
-    found = false;
-    while((it = std::find(commands.begin(), commands.end(), "2>")) != commands.end()) {
-      found = true;
-      filename = * (it + 1);
-      commands.erase(it); // remove "2>" in MyShell::commands
-      commands.erase(it); // remove the output file name in MyShell::commands
-    }
-    if (found == true) {
+    if (!error_filename.empty()) {
       close(2);
-      open(filename.c_str(), O_WRONLY | O_CREAT, 0666);
+      open(error_filename.c_str(), O_WRONLY | O_CREAT, 0666);
     }
     configCommandPipe(command_index);
     char ** new_c_commands = vector2array(commands);

@@ -14,6 +14,6 @@ md....怎么4和5又没出现了......我出现幻觉了吗
 
 TODO: add pipe config to exit, cd, set, export
 
-6. redirect no space between > < and file name, although not required
-7. add implementation for 2>&1, required
+6. (solved) redirect no space between > < and file name, although not required
+7. (solved) add implementation for 2>&1, required
 actually I feel to do 7, I need to do 6 first
