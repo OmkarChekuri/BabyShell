@@ -14,6 +14,53 @@ md....怎么4和5又没出现了......我出现幻觉了吗
 
 TODO: add pipe config to exit, cd, set, export
 
+myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ ls | cat a
+cat: a: No such file or directory
+Program was killed by signal 13
+myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ ls | cat a
+cat: a: No such file or directory
+Program exited with status 0
+
+myShell:/home/yg95/ece551/mp_miniproject$ ls | cat a
+/bin/cat: a: No such file or directory
+Program was killed by signal 13
+myShell:/home/yg95/ece551/mp_miniproject$ ls | cat a
+/bin/cat: a: No such file or directory
+Program exited with status 1
+
+myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ echo a | ls |
+Program was killed by signal 13
+
+myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ ls |
+Program was killed by signal 13
+myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ ls | cd
+Program was killed by signal 13
+
 6. (solved) redirect no space between > < and file name, although not required
 7. (solved) add implementation for 2>&1, required
 actually I feel to do 7, I need to do 6 first
+8. (solved) if a command stops because of errors, how to indicate that
+9. (done) variable and function names, refactor
+10. (done) comment
+11. test
+
+12. (solved) myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ ls | cat |
+myShell(57759,0x7fff970d83c0) malloc: *** mach_vm_map(size=7588962717635600384) failed (error code=3)
+*** error: can't allocate region
+*** set a breakpoint in malloc_error_break to debug
+libc++abi.dylib: terminating with uncaught exception of type std::bad_alloc: std::bad_alloc
+Program was killed by signal 13
+
+13. (solved) myShell:/Users/yilingao/Duke/ece551/mp_miniproject$  | ls
+Makefile		commandShell.txt	myShell			myShell.h		todo.txt
+README			main.cpp		myShell.cpp		numerics.txt
+
+no exit status value
+
+14. (solved) myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ set PATH 123
+set variable PATH with value 123
+myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ echo $PATH
+/Users/yilingao/application/spark/spark-1.6.0-bin-hadoop2.6/bin:/Users/yilingao/application/spark/spark-1.6.0-bin-hadoop2.6/ec2:/Users/yilingao/application/sbt/sbt-1.0.2/bin:/Users/yilingao/application/spark/spark-1.6.0-bin-hadoop2.6/bin:/Users/yilingao/application/spark/spark-1.6.0-bin-hadoop2.6/ec2:/Users/yilingao/application/sbt/sbt-1.0.2/bin:/usr/local/opt/node@6/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/Users/yilingao/Library/Android/sdk/tools:/Users/yilingao/Library/Android/sdk/platform_tools
+Program exited with status 0
+
+not change variable value

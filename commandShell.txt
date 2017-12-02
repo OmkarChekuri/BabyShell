@@ -52,7 +52,7 @@ Step 2: Improving commands
    by white space.  For example
      ./myProgram a b 23
    runs myProgram with arguments "a"  "b" and "23".  There may be an arbitrary
-   amount of whitespace in between arguments, so 
+   amount of whitespace in between arguments, so
      ./myProgram         a               b     23
    has the same behavior as the previous example.  However, any white space
    which is escaped with a \ should be literally included in the argument, and
@@ -64,7 +64,7 @@ Step 2: Improving commands
 
      ./myProgram a\  b c \ d
 
-     whould have arguments "a " "b" "c" and " d", as the non-escaped spaces
+     would have arguments "a " "b" "c" and " d", as the non-escaped spaces
      separate arguments.
 
 
@@ -88,7 +88,7 @@ Step 3: Directories and Variables
       o export var
         This should put the current value of var into the environment for other programs.
    Note that you may find the "env" command useful for testing this.
-     - If you "set" a variable (but dont "export" it) the new value should
+     - If you "set" a variable (but don't "export" it) the new value should
        not show up in "env".  If you "export" it, the new value should show up in "env".
 
    Note also that if the user changes PATH, it should affect where your shell
@@ -97,7 +97,7 @@ Step 3: Directories and Variables
 Step 4: Pipes and redirection
   - Implement input redirection (<) and output redirection (>)
      < filename   redirects standard input for the command
-     > filename   redirects standard ouput
+     > filename   redirects standard output
      2> filename  redirects standard error
    Note that you will need to implement these between the fork()
    and execve() calls.  You will need to make use of close()
@@ -119,16 +119,9 @@ along with having command line arguments:
 
 NOTE: It is very easy to write a broken implementation of pipes which LOOKS like
       it works on  short input (< 65536 bytes), but deadlocks on longer
-      input.   Your implemenation must work correctly when sending large
+      input.   Your implementation must work correctly when sending large
       amounts of data through the pipe for full credit.
 
       Using fcntl with F_SETPIPE_SZ to adjust the kernel buffer size to
       "larger than you think we will test with" is NOT a valid approach.
       If I see you trying to do this, you will get no credit for part 4.
-
-
-
-
-
-
-

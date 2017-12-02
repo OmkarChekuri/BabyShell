@@ -63,13 +63,19 @@ std::vector<std::string> splitPath(const std::string & paths) {
 /**********CLASS PRIVATE FUNCTIONS*******/
 /****************************************/
 
+/**
+ * set the key-value pair into MyShell::vars
+ * this function doesn't check if the variable name is valid
+ * it's the caller's job to guarantee the variable name is valid
+ **/
 void MyShell::setVar(std::string key, std::string value) {
   vars[key] = value;
 }
 
 /**
  * parse the one-line user input on '|' to get each piped command
- * store all puped commands into std::vector<std::string> MyShell::piped_commands
+ * store all piped commands into std::vector<std::string> MyShell::piped_commands
+ * if the last character in MyShell::input is '|', this is regarged as an error
  **/
 void MyShell::parsePipedInput() {
   std::size_t start = 0;
@@ -78,20 +84,24 @@ void MyShell::parsePipedInput() {
     piped_commands.push_back(input.substr(start, pipe_pos - start));
     start = pipe_pos + 1;
   }
+  if (start == input.length()) {
+    std::cerr << "cannot have | at the end of input" << std::endl;
+    error = true;
+    return;
+  }
   piped_commands.push_back(input.substr(start));
 }
 
 /**
- * parse piped_commands[i]
+ * parse piped_commands[curr_command_index]
  * command is delimitered by whitespace, unless the whitespace is escaped, whitespace will be discarded
  * the first delimited "word" in the command is the command name
  * all other "words" are arguments to the command
  * the \ mark will be removed from the user input command string for the ease of future use
- * the MyShell::commands vector could be empty,
- *    if 1) the input is empty, 2) the input is invalid (\ terminated)
+ * the MyShell::commands vector could be empty if the input is empty
  **/
-void MyShell::parseCommand(int i) {
-  std::string curr_command = piped_commands[i];
+void MyShell::parseCommand() {
+  std::string curr_command = piped_commands[curr_command_index];
   std::string word;
   std::string modified_curr_command;
   for (std::size_t end = 0; end < curr_command.length(); end++) {
@@ -103,8 +113,8 @@ void MyShell::parseCommand(int i) {
       modified_curr_command.push_back(curr_command[end]);
     } else if (curr_command[end] == '\\') {
       if (end == curr_command.length() - 1) {
-	        std::cerr << "cannot use escape mark at the end of a line." << std::endl;
-	        commands.clear();
+	        std::cerr << "cannot use escape mark at the end of a command" << std::endl;
+          error = true;
 	        return;
       }
       word.push_back(curr_command[++end]); // put the escaped char into the word stream
@@ -120,7 +130,7 @@ void MyShell::parseCommand(int i) {
       }
     }
   }
-  piped_commands[i] = modified_curr_command;
+  piped_commands[curr_command_index] = modified_curr_command;
   evaluateVars();
 }
 
@@ -177,7 +187,7 @@ void MyShell::evaluateVars() {
  * commands[0] is the real command that we care about
  * 1. commands[0] contain '/': find if the file name exist
  * 2. commands[0] doesn't contain "/": search all paths in PATH, to see if the file name is in any one of them
- * in the two cases, if the file is found, return true. Else print the required text, and return false
+ * in the two cases, if the file is found, return true, else return false
  **/
 bool MyShell::searchCommand() {
   std::string command = commands[0];
@@ -193,32 +203,35 @@ bool MyShell::searchCommand() {
       std::string complete_path = *it + "/" + command;
       std::ifstream ifs(complete_path.c_str());
       if (ifs.good()) {
-	    exist = true;
-	    commands[0] = complete_path; // replace the shortened path with the complete one
-	    break;
+  	    exist = true;
+  	    commands[0] = complete_path; // replace the shortened path with the complete one
+  	    break;
       }
     }
-  }
-  if (!exist) {
-    std::cout << "Command " << command << " not found" << std::endl;
   }
   return exist;
 }
 
-void MyShell::runExitCommands(std::size_t command_index) {
-  // configCommandPipe(command_index);
+/**
+ * run exit commands (EOF and "exit")
+ * set the boolean variable exitting to true
+ **/
+void MyShell::runExitCommands() {
+  // configCommandPipe();
   exitting = true;
 }
 
 /**
+ * run "cd" command
  * cd command can only take 0 or 1 argument
  * 0 argument: cd to home directory
  * 1 argument: cd to the given argument if it exists
  **/
-void MyShell::runCdCommand(std::size_t command_index) {
-  // configCommandPipe(command_index);
+void MyShell::runCdCommand() {
+  // configCommandPipe();
   if (commands.size() > 2) {
     std::cerr << "too many arguments for cd" << std::endl;
+    error = true;
     return;
   }
   std::string dest = getenv("HOME");
@@ -227,6 +240,7 @@ void MyShell::runCdCommand(std::size_t command_index) {
   }
   if(chdir(dest.c_str()) != 0) { // chdir fails, the current directory doesn't change
     std::cerr << "cannot change directory: " << std::strerror(errno) << std::endl;
+    error = true;
   } else {
     char cwd[1024];
     setenv("OLDPWD", vars["PWD"].c_str(), 1);
@@ -235,17 +249,21 @@ void MyShell::runCdCommand(std::size_t command_index) {
   }
 }
 
-void MyShell::runSetCommand(std::size_t command_index) {
-  // configCommandPipe(command_index);
+/**
+ * run "set" command
+ * the syntax has to be: set "variableName" "variableValue"
+ * and there are a set of rules for valid variable name, refer to document
+ **/
+void MyShell::runSetCommand() {
+  // configCommandPipe();
   if (commands.size() < 3) {
     std::cerr << "too few arguments for set: " << commands.size() << std::endl;
-    for (std::vector<std::string>::iterator it = commands.begin(); it != commands.end(); it++) {
-      std::cout << *it << std::endl;
-    }
+    error = true;
     return;
   }
-  if (validateVarName(commands[1]) == false) {
+  if (!validateVarName(commands[1])) {
     std::cerr << "invalid var name: var names can only contain letters (case sensitive), numbers and underscores" << std::endl;
+    error = true;
     return;
   }
   std::size_t setPos = input.find(commands[0]); // the starting index of substr "set"
@@ -256,154 +274,227 @@ void MyShell::runSetCommand(std::size_t command_index) {
   std::cout << "set variable " << commands[1] << " with value " << vars[commands[1]] << std::endl;
 }
 
-void MyShell::runExportCommand(std::size_t command_index) {
-  // configCommandPipe(command_index);
+/**
+ * run "export" command
+ * the "export" command can take any number of variables, and export each of them into environ
+ * but if any of the variable names is invalid, the export process stops right at it, vars before it are exported, but all later vars (including itself) are not exported
+ * if the exported var is in MyShell::vars, just export it into environ, do nothing else
+ * else add the var and "" as its value into MyShell::vars, and then export it into environ
+ **/
+void MyShell::runExportCommand() {
+  // configCommandPipe();
   for (std::vector<std::string>::iterator it = commands.begin() + 1; it != commands.end(); it++) {
+    if (!validateVarName(*it)) {
+      std::cerr << "invalid var name: var names can only contain letters (case sensitive), numbers and underscores" << std::endl;
+      error = true;
+      return;
+    }
     std::map<std::string, std::string>::iterator varsit = vars.find(*it);
     std::string value = "";
     if (varsit != vars.end()) {
       value = varsit->second;
+    } else {
+      setVar(*it, "");
     }
     if (setenv(it->c_str(), value.c_str(), 1) != 0) { // 1: always replace
       std::cerr << "failed to export variable " << *it << ": " << std::strerror(errno) << std::endl;
+      error = true;
     } else {
       std::cout << "export variable " << *it << " with value " << value << std::endl;
     }
   }
 }
 
-void MyShell::runCommand(std::size_t command_index) {
-  pid_t forkResult = fork(); // fork a child process same as the parent one
-  if (forkResult == -1) { // fork error, skip the command
-    std::cerr << "failed to create a child process: " << std::strerror(errno) << std::endl;
-    exit(EXIT_FAILURE);
-  } else if (forkResult == 0) { // in the child process
-    std::string input_filename;
-    std::string output_filename;
-    std::string error_filename;
-    for (std::vector<std::string>::iterator it = commands.begin() + 1; it != commands.end(); ) {
-      std::string curr = *it;
-      if (curr.compare(0, 1, "<") == 0) {
-        if (curr.length() == 1) { // curr == "<"
-          if (it + 1 == commands.end()) {
-            std::cerr << "incorrect input format: < requires an input file" << std::endl;
-            return;
-          } else {
-            input_filename = *(it + 1);
-            commands.erase(it);
-            commands.erase(it); // no need for it++ again
-          }
-        } else { // curr starts with "<"
-          input_filename = curr.substr(1);
+/**
+ * in a child process
+ * config redirect input and output
+ * <: redirect stdin to the given input file
+ * >: redirect stdout to the given outout file, if the file doesn't exist, create with permissions
+ * 2>: redirect stderr to the given output file, if the file doesn't exist, create with permissions
+ *    2>&1: redirect stderr to the same file as the the output file
+ * TODO refactor, extract methods
+ **/
+void MyShell::configCommandRedirect() {
+  std::string input_filename;
+  std::string output_filename;
+  std::string error_filename;
+  for (std::vector<std::string>::iterator it = commands.begin() + 1; it != commands.end(); ) {
+    std::string curr = *it;
+    if (curr.compare(0, 1, "<") == 0) {
+      if (curr.length() == 1) { // curr == "<"
+        if (it + 1 == commands.end()) {
+          std::cerr << "incorrect input format: < requires an input file" << std::endl;
+          error = true;
+          return;
+        } else {
+          input_filename = *(it + 1);
+          commands.erase(it);
           commands.erase(it); // no need for it++ again
         }
-      } else if (curr.compare(0, 1, ">") == 0) {
-        if (curr.length() == 1) { // curr == ">"
-          if (it + 1 == commands.end()) {
-            std::cerr << "incorrect input format: > requires an output file" << std::endl;
-            return;
-          } else {
-            output_filename = *(it + 1);
-            commands.erase(it);
-            commands.erase(it); // no need for it++ again
-          }
-        } else { // curr starts with ">"
-          output_filename = curr.substr(1);
+      } else { // curr starts with "<"
+        input_filename = curr.substr(1);
+        commands.erase(it); // no need for it++ again
+      }
+    } else if (curr.compare(0, 1, ">") == 0) {
+      if (curr.length() == 1) { // curr == ">"
+        if (it + 1 == commands.end()) {
+          std::cerr << "incorrect input format: > requires an output file" << std::endl;
+          error = true;
+          return;
+        } else {
+          output_filename = *(it + 1);
+          commands.erase(it);
           commands.erase(it); // no need for it++ again
         }
-      } else if (curr.compare(0, 2, "2>") == 0) {
-        if (curr.length() == 2) { // curr == "2>"
-          if (it + 1 == commands.end()) {
-            std::cerr << "incorrect input format: 2< requires an output file" << std::endl;
-            return;
-          } else {
-            error_filename = *(it + 1);
-            commands.erase(it);
-            commands.erase(it); // no need for it++ again
-          }
-        } else { // curr starts with "2>"
-          if (curr.compare("2>&1") == 0) {
-            error_filename = output_filename;
-          } else {
-            error_filename = curr.substr(2);
-          }
+      } else { // curr starts with ">"
+        output_filename = curr.substr(1);
+        commands.erase(it); // no need for it++ again
+      }
+    } else if (curr.compare(0, 2, "2>") == 0) {
+      if (curr.length() == 2) { // curr == "2>"
+        if (it + 1 == commands.end()) {
+          std::cerr << "incorrect input format: 2< requires an output file" << std::endl;
+          error = true;
+          return;
+        } else {
+          error_filename = *(it + 1);
+          commands.erase(it);
           commands.erase(it); // no need for it++ again
         }
-      } else {
-        it++;
+      } else { // curr starts with "2>"
+        if (curr.compare("2>&1") == 0) {
+          error_filename = output_filename;
+        } else {
+          error_filename = curr.substr(2);
+        }
+        commands.erase(it); // no need for it++ again
       }
+    } else {
+      it++;
     }
-    if (!input_filename.empty()) {
-      if (command_index != 0) { // only the first piped command can redirect stdin
-        std::cerr << "cannot redirect stdin for a non-head command in pipe" << std::endl;
-        // error = true;
-        return;
-      }
-      close(0);
-      open(input_filename.c_str(), O_RDONLY);
+  }
+  if (!input_filename.empty()) {
+    if (curr_command_index != 0) { // only the first piped command can redirect stdin
+      std::cerr << "cannot redirect stdin for a non-head command in pipe" << std::endl;
+      error = true;
+      return;
     }
-    if (!output_filename.empty()) {
-      if (command_index != piped_commands.size() - 1) { // only the last piped command can redirect stdout
-        std::cerr << "cannot redirect stdout for a non-end command in pipe" << std::endl;
-        // error = true;
-        return;
-      }
-      close(1);
-      open(output_filename.c_str(), O_WRONLY | O_CREAT, 0666); // set file permission
+    close(0);
+    open(input_filename.c_str(), O_RDONLY);
+  }
+  if (!output_filename.empty()) {
+    if (curr_command_index != piped_commands.size() - 1) { // only the last piped command can redirect stdout
+      std::cerr << "cannot redirect stdout for a non-end command in pipe" << std::endl;
+      error = true;
+      return;
     }
-    if (!error_filename.empty()) {
-      close(2);
-      open(error_filename.c_str(), O_WRONLY | O_CREAT, 0666);
-    }
-    configCommandPipe(command_index);
-    char ** new_c_commands = vector2array(commands);
-    // if the child calls execve right after forking, the second copy of the parent's memory is destroyed and replaced with a memory image loaded from the requested binary
-    execve(new_c_commands[0], new_c_commands, environ);
-    std::cerr << "execve failed: " << std::strerror(errno) << std::endl;
-    _exit(EXIT_FAILURE); // if execve returns, the child process fails, and should use _exit to exit the forked process
+    close(1);
+    open(output_filename.c_str(), O_WRONLY | O_CREAT, 0666); // set file permission
+  }
+  if (!error_filename.empty()) {
+    close(2);
+    open(error_filename.c_str(), O_WRONLY | O_CREAT, 0666);
   }
 }
 
-void MyShell::runPipedCommands() {
+/**
+ * in a child process
+ * config its pipe input and output
+ **/
+void MyShell::configCommandPipe() {
+  std::size_t num_commands = piped_commands.size();
+  std::size_t num_pipes = piped_commands.size() - 1;
+  if (curr_command_index != 0) { // not the first command
+    // close fd 0 for stdin, and redirect pipe R end to fd 0
+    if (dup2(pipefd[2 * (curr_command_index - 1)], 0) < 0) {
+      std::cerr << "failed to redirect stdin: " << std::strerror(errno) << std::endl;
+      error = true;
+      return;
+      // exit(EXIT_FAILURE);
+    }
+  }
+  if (curr_command_index != num_commands - 1) { // not the last command
+    // close fd 1 for stdout, and redirect pipe W end to fd 1
+    if (dup2(pipefd[2 * curr_command_index + 1], 1) < 0) {
+      std::cerr << "failed to redirect stdout: " << std::strerror(errno) << std::endl;
+      error = true;
+      return;
+      // exit(EXIT_FAILURE);
+    }
+  }
+  // close all pipe fds, only use the new 0 and 1 for read and write
+  for (std::size_t i = 0; i < 2 * num_pipes; i++) {
+    if (close(pipefd[i]) < 0) {
+      std::cerr << "failed to close pipes: " << std::strerror(errno) << std::endl;
+      error = true;
+      return;
+    }
+  }
+}
+
+/**
+ * run a normal command with the need to fork a child process
+ * (commands except for exit, cd, set, and export)
+ **/
+void MyShell::runCommand() {
+  pid_t forkResult = fork(); // fork a child process same as the parent one
+  num_child_processes++;
+  if (forkResult == -1) { // fork error, skip the command
+    std::cerr << "failed to create a child process: " << std::strerror(errno) << std::endl;
+    error = true;
+  } else if (forkResult == 0) { // in the child process
+    configCommandRedirect();
+    configCommandPipe();
+    char ** c_commands = vector2array(commands);
+    // if the child calls execve right after forking, the second copy of the parent's memory is destroyed and replaced with a memory image loaded from the requested binary
+    execve(c_commands[0], c_commands, environ);
+    std::cerr << "execve failed: " << std::strerror(errno) << std::endl;
+    _exit(EXIT_FAILURE); // if execve returns, the child process fails, and should use _exit to exit the forked child process
+  }
+}
+
+/**
+ * in the parent process
+ * allocate space for MyShell::pipefd
+ * create pipes for all piped commands
+ **/
+void MyShell::createPipes() {
   int num_pipes = piped_commands.size() - 1;
   pipefd = new int[2 * num_pipes]; // 2 * number of pipe marks
   for (int i = 0; i < num_pipes; i++) {
     if (pipe(pipefd + 2 * i) < 0) { // R end: 2 * i, W end: 2 * i + 1
       std::cerr << "failed to create pipes: " << std::strerror(errno) << std::endl;
+      error = true;
       return;
     }
   }
-  std::size_t num_general_commands = 0; // number of commands require starting a child process
-  for (std::vector<std::string>::iterator it = piped_commands.begin(); it != piped_commands.end(); it++) {
-    int command_index = std::distance(piped_commands.begin(), it);
-    parseCommand(command_index);
-    if (!commands.empty()) { // the command makes sense to the shell
-      std::string command_name = commands[0];
-      if (command_name.compare("exit") == 0) {
-	      runExitCommands(command_index);
-      } else if (command_name.compare("cd") == 0) {
-	      runCdCommand(command_index);
-      } else if (command_name.compare("set") == 0) {
-	      runSetCommand(command_index);
-      } else if (command_name.compare("export") == 0) {
-	      runExportCommand(command_index);
-      } else {
-      	// command doesn't exist, do nothing
-      	if (searchCommand() == true) {
-          num_general_commands++;
-      	  runCommand(command_index);
-      	}
-      }
-    }
-    commands.clear();
-  }
+}
+
+/**
+ * in the parent process
+ * close all pipe fds before waiting for child processes
+ **/
+void MyShell::closePipes() {
+  int num_pipes = piped_commands.size() - 1;
   for (int i = 0; i < 2 * num_pipes; i++) {
-    close(pipefd[i]);
+    if (close(pipefd[i]) < 0) {
+      std::cerr << "failed to close pipes: " << std::strerror(errno) << std::endl;
+      error = true;
+      return;
+    }
   }
+}
+
+/**
+ * in the parent process
+ * the parent needs to wait for all its forked child processes to finish (exit), and then exit itself
+ * report the exit status of the last piped command, if that command has a exit status (needs fork)
+ **/
+void MyShell::waitForChildProcesses() {
   int childStatus;
-  for (std::size_t i = 0; i < num_general_commands; i++) {
+  for (std::size_t i = 0; i < num_child_processes; i++) {
     wait(&childStatus);
-    if (i == piped_commands.size() - 1) { // only print the exit status of the last "reportable" piped command
+    if (i == num_child_processes - 1) { // only print the exit status of the last "reportable" piped command
       if (WIFEXITED(childStatus)) { // the child process is terminated normally
         std::cout << "Program exited with status " << WEXITSTATUS(childStatus) << std::endl;
       } else if (WIFSIGNALED(childStatus)) { // the child process is terminated due to receipt of a signal
@@ -411,17 +502,67 @@ void MyShell::runPipedCommands() {
       }
     }
   }
+}
+
+/**
+ * run the piped commands in MyShell::piped_commands in order
+ **/
+void MyShell::runPipedCommands() {
+  createPipes();
+  for (curr_command_index = 0; curr_command_index < piped_commands.size(); curr_command_index++) {
+    if (error) break; // if any error occur previously during the execution of this input, stop
+    parseCommand();
+    if (error) break; // if error occur during parsing comamnd, stop
+    if (!commands.empty()) { // if the command is not empty
+      std::string command_name = commands[0];
+      if (command_name.compare("exit") == 0) {
+  	    runExitCommands();
+      } else if (command_name.compare("cd") == 0) {
+        runCdCommand();
+      } else if (command_name.compare("set") == 0) {
+       runSetCommand();
+      } else if (command_name.compare("export") == 0) {
+        runExportCommand();
+      } else {
+      	if (searchCommand()) { // command exists
+          runCommand();
+        } else {
+          std::cerr << "command " << commands[0] << " not found" << std::endl;
+          error = true;
+        }
+      }
+      commands.clear();
+    }
+  }
+  closePipes();
+  waitForChildProcesses();
   delete[] pipefd;
 }
 
 /**
- * remove contents of command and commands
+ * set the error indicator to false
+ * remove contents of input, piped_commands and commands
+ * reset curr_command_index and num_child_processes to 0
  * update environment variables in case other programs change them
  **/
 void MyShell::refresh() {
+  error = false;
   input.clear();
   piped_commands.clear();
   commands.clear();
+  curr_command_index = 0;
+  num_child_processes = 0;
+}
+
+/****************************************/
+/**********CLASS PUBLIC FUNCTIONS********/
+/****************************************/
+/**
+ * default constructor of MyShell CLASS
+ * initialize some class variables
+ * set up env vars once
+ **/
+MyShell::MyShell(): error(false), exitting(false), curr_command_index(0), num_child_processes(0) {
   char ** envp = environ;
   while (*envp) {
     std::string curr_env(*envp);
@@ -431,54 +572,30 @@ void MyShell::refresh() {
   }
 }
 
-void MyShell::configCommandPipe(std::size_t command_index) {
-  std::size_t num_commands = piped_commands.size();
-  std::size_t num_pipes = piped_commands.size() - 1;
-  if (command_index != 0) { // not the first command
-    // close fd 0 for stdin, and redirect pipe R end to fd 0
-    if (dup2(pipefd[2 * (command_index - 1)], 0) < 0) {
-      std::cerr << "failed to redirect stdin: " << std::strerror(errno) << std::endl;
-      // exit(EXIT_FAILURE);
-    }
-  }
-  if (command_index != num_commands - 1) { // not the last command
-    // close fd 1 for stdout, and redirect pipe W end to fd 1
-    if (dup2(pipefd[2 * command_index + 1], 1) < 0) {
-      std::cerr << "failed to redirect stdout: " << std::strerror(errno) << std::endl;
-      // exit(EXIT_FAILURE);
-    }
-  }
-  // close all pipe fds, only use the new 0 and 1 for read and write
-  for (std::size_t i = 0; i < 2 * num_pipes; i++) {
-    close(pipefd[i]);
-  }
-}
-/****************************************/
-/**********CLASS PUBLIC FUNCTIONS********/
-/****************************************/
-MyShell::MyShell(): exitting(false) {
-}
-
+/**
+ * execute one round of input command
+ **/
 void MyShell::execute() {
   refresh();
   std::cout << "myShell:" << vars["PWD"] << "$ ";
   std::getline(std::cin, input); // default delim is '\n' and will be discarded, great!
   if (std::cin.eof()) {
-    // runExitCommands();
-    exitting = true;
+    runExitCommands();
     std::cin.clear();
     std::cout << std::endl;
   } else if (std::cin.fail() || std::cin.bad()) {
     std::cin.clear();
-  } else { // good
+  } else { // std::cin is good, valid input
     parsePipedInput();
+    if (error) return;
     runPipedCommands();
-    // for (std::vector<std::string>::iterator it = commands.begin(); it != commands.end(); it++) {
-    //   std::cout << *it << std::endl;
-    // }
   }
 }
 
+/**
+ * return to the caller if the shell is going to exit
+ * i.e., in the previous step the user gives "exit" commands
+ **/
 bool MyShell::isExitting() {
   return exitting;
 }
