@@ -8,6 +8,7 @@
 #include <sstream>
 #include <vector>
 #include <iterator>
+#include <algorithm>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <ctype.h>
@@ -271,15 +272,61 @@ void MyShell::runExportCommand(std::size_t command_index) {
   }
 }
 
-void MyShell::runCommand(char ** c_commands, std::size_t command_index) {
+void MyShell::runCommand(std::size_t command_index) {
   pid_t forkResult = fork(); // fork a child process same as the parent one
   if (forkResult == -1) { // fork error, skip the command
     std::cerr << "failed to create a child process: " << std::strerror(errno) << std::endl;
     exit(EXIT_FAILURE);
   } else if (forkResult == 0) { // in the child process
+    bool found = false;
+    std::vector<std::string>::iterator it;
+    std::string filename;
+    while((it = std::find(commands.begin(), commands.end(), "<")) != commands.end()) {
+      found = true;
+      filename = * (it + 1);
+      commands.erase(it); // remove "<" in MyShell::commands
+      commands.erase(it); // remove the input file name in MyShell::commands
+    }
+    if (found == true) {
+      if (command_index != 0) { // only the first piped command can redirect stdin
+        std::cerr << "cannot redirect stdin for a non-head command in pipe" << std::endl;
+        // error = true;
+        return;
+      }
+      close(0);
+      open(filename.c_str(), O_RDONLY);
+    }
+    found = false;
+    while((it = std::find(commands.begin(), commands.end(), ">")) != commands.end()) {
+      found = true;
+      filename = * (it + 1);
+      commands.erase(it); // remove ">" in MyShell::commands
+      commands.erase(it); // remove the output file name in MyShell::commands
+    }
+    if (found == true) {
+      if (command_index != piped_commands.size() - 1) { // only the last piped command can redirect stdout
+        std::cerr << "cannot redirect stdout for a non-end command in pipe" << std::endl;
+        // error = true;
+        return;
+      }
+      close(1);
+      open(filename.c_str(), O_WRONLY | O_CREAT, 0666); // set file permission
+    }
+    found = false;
+    while((it = std::find(commands.begin(), commands.end(), "2>")) != commands.end()) {
+      found = true;
+      filename = * (it + 1);
+      commands.erase(it); // remove "2>" in MyShell::commands
+      commands.erase(it); // remove the output file name in MyShell::commands
+    }
+    if (found == true) {
+      close(2);
+      open(filename.c_str(), O_WRONLY | O_CREAT, 0666);
+    }
     configCommandPipe(command_index);
+    char ** new_c_commands = vector2array(commands);
     // if the child calls execve right after forking, the second copy of the parent's memory is destroyed and replaced with a memory image loaded from the requested binary
-    execve(c_commands[0], c_commands, environ);
+    execve(new_c_commands[0], new_c_commands, environ);
     std::cerr << "execve failed: " << std::strerror(errno) << std::endl;
     _exit(EXIT_FAILURE); // if execve returns, the child process fails, and should use _exit to exit the forked process
   }
@@ -312,12 +359,7 @@ void MyShell::runPipedCommands() {
       	// command doesn't exist, do nothing
       	if (searchCommand() == true) {
           num_general_commands++;
-      	  char ** c_commands = vector2array(commands);
-      	  runCommand(c_commands, command_index);
-      	  for (std::size_t i = 0; i < commands.size(); i++) {
-      	    delete[] c_commands[i];
-      	  }
-      	  delete[] c_commands;
+      	  runCommand(command_index);
       	}
       }
     }
@@ -361,17 +403,20 @@ void MyShell::configCommandPipe(std::size_t command_index) {
   std::size_t num_commands = piped_commands.size();
   std::size_t num_pipes = piped_commands.size() - 1;
   if (command_index != 0) { // not the first command
+    // close fd 0 for stdin, and redirect pipe R end to fd 0
     if (dup2(pipefd[2 * (command_index - 1)], 0) < 0) {
       std::cerr << "failed to redirect stdin: " << std::strerror(errno) << std::endl;
       // exit(EXIT_FAILURE);
     }
   }
   if (command_index != num_commands - 1) { // not the last command
+    // close fd 1 for stdout, and redirect pipe W end to fd 1
     if (dup2(pipefd[2 * command_index + 1], 1) < 0) {
       std::cerr << "failed to redirect stdout: " << std::strerror(errno) << std::endl;
       // exit(EXIT_FAILURE);
     }
   }
+  // close all pipe fds, only use the new 0 and 1 for read and write
   for (std::size_t i = 0; i < 2 * num_pipes; i++) {
     close(pipefd[i]);
   }
