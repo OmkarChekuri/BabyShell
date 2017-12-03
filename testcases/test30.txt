@@ -1,0 +1,3 @@
+cat <main.cpp>out2>&1
+ls
+cat out

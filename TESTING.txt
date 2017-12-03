@@ -1,0 +1,526 @@
+1. Test Step 1
+1). Run ./myShell < testcases/test01.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		testcases
+    README			commandShell.txt	myShell			myShell.h		todo.txt
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    which is correct because test01.txt specifies to run one program "/bin/ls",
+    so the first shell prompt is followed by the output of the program, and then
+    the exit status of the program.
+    After the first shell prompt is finished,
+    the shell will print another prompt to take the next input. In test01.txt,
+    the next input is EOF, so the shell exits. (this is same for all later
+    test cases.)
+2). Run ./myShell < testcases/test03.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ cat: fileNotExist: No such file or directory
+    Program exited with status 1
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    which is correct because test03.txt specifies to run program "/bin/cat" with
+    argument "fileNotExist". And the program is supposed to fail because cannot find
+    the argument file. And the shell prints the error message and exit status.
+3). Run ./myShell < testcases/test04.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		testcases
+    README			commandShell.txt	myShell			myShell.h		todo.txt
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Sat Dec  2 16:49:28 EST 2017
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ %
+    which is correct because test04.txt specifies to run 3 consecutive commands.
+    The first is to run "/bin/ls", which should run successfully and print the ls results and exit status.
+    The second is to run "/bin/date", which should run successfully and print the date info and exit status.
+    The third is to run "exit", which is to exit the shell.
+4). Run ./myShell < testcases/test05.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		testcases
+    README			commandShell.txt	myShell			myShell.h		todo.txt
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ cat: fileNotExit: No such file or directory
+    Program exited with status 1
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    which is correct because test05.txt specifies to run 2 consecutive commands.
+    The first is to run "/bin/ls", and same as test case 04, it should run successfully.
+    The second is to run "/bin/cat" with argument "fileNotExit", and it will fail and prints error message and exit status.
+    The next input in the file is EOF, so the shell exits.
+
+2. Test step 2
+1). Run ./myShell < testcases/test06.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		testcases
+    README			commandShell.txt	myShell			myShell.h		todo.txt
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    which is correct because test06.txt specifies to run "ls", and the shell would search
+    for the program named "ls" in PATH. Without any modification, the shell should be
+    able to find it and execute it, then prints correct results and exit status.
+2). Run ./myShell < testcases/test07.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ command commandNotExist not found
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    which is correct because test07.txt specifies to run "commandNotExist", and the
+    shell searches for it in all directories in PATH, but cannot find it. So the
+    shell prints out the error message and refuses to execute it.
+3). Make sure you have the binary file "counts_test" from "058_counts" in the current directory
+    Run ./myShell < testcases/test08.txt
+    You will see the program prints:
+    myShell:/home/yg95/ece551/mp_miniproject$ apple: 3
+    banana: 1
+    frog: 2
+    sword: 1
+    bear: 1
+    zebra: 1
+    knight: 1
+    <unknown>: 2
+    Program exited with status 0
+    myShell:/home/yg95/ece551/mp_miniproject$
+    which is correct because test08.txt specifies to run program "./counts_test".
+    This is a file name with "/" in it, so the shell would only search the given path.
+    Because the program exists, the shell would run it and prints expected output and exit status.
+4). Run ./myShell < testcases/test09.txt
+    You will see the program prints:
+    myShell:/home/yg95/ece551/mp_miniproject$ command ./programNotExist not found
+    myShell:/home/yg95/ece551/mp_miniproject$
+    which is correct because the given file "./programNotExist" doesn't exist,
+    and the shell cannot find it. So the shell prints out the error message and
+    refuses to execute it.
+5). I would rerun testcases/test01.txt to test the shell can execute absolute file
+    path with "/". The expected output and reason is the same as 1(1).
+6). Run ./myShell < testcases/test10.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ command /bin/commandNotExist not found
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    which is correct because the given file "/bin/commandNotExist" is an absolute file
+    path with "/". So the shell would only search for the given path, but not able to find it.
+    So the shell would print the error message and refuse to execute it.
+7). Run ./myShell < testcases/test02.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ #include "myShell.h"
+
+    int main(int argc, char ** argv, char ** envp) {
+    MyShell myShell;
+        while (!myShell.isExitting()) {
+          myShell.execute();
+        }
+    }
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    which is correct because test02.txt specifies to run program "/bin/cat" with
+    one argument "main.cpp". Because the file exists in the directory,
+    and the argument makes sense to the program, so the program
+    is supposed to succeed, print the results, and the exit status.
+8). Run ./myShell < testcases/test11.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ /Users/yilingao/Duke/ece551/mp_miniproject yilingao
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    which is correct because test11.txt specifies to run command "echo" with 2
+    arguments: $PWD and $USER. (Based on later steps) the shell is able to interpret
+    these two values and echo them in order. This tests that the shell can make
+    a command take any number of space-delimited arguments.
+9). Run ./myShell < testcases/test12.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ /Users/yilingao/Duke/ece551/mp_miniproject yilingao
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    which is correct because test12.txt is different from test11.txt in that it adds
+    more random whitespace between "echo", "$PWD" and "$USER". According to the
+    requirement, this test case would have exact same result as test11.
+10).Run ./myShell < testcases/test13.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ a b c  d
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    which is correct because the shell requires to use "\" to escape whitespace.
+    So the two arguments to "echo" in this test case should be "a b" and "c  d".
+11).Run ./myShell < testcases/test14.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ ab
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ a\
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    which is correct, because at my own discretion, I chose to design the shell
+    in a way that if "\" is followed by a character, the shell just
+    removes the "\" from input and keep the following character.
+12).Run ./myShell < testcases/test15.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ cannot use escape mark at the end of a command
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    which is correct, because at my own discretion, I chose to design the shell
+    in a way that it is illegal to put "\" at the end of a line of input,
+    without any following character.
+
+3. Test Step 3
+1). Make sure there is a "ece551" directory in your home directory
+    Run ./myShell < testcases/test16.txt
+    You will see the program prints:
+    myShell:/home/yg95/ece551/mp_miniproject$ myShell:/home/yg95$ myShell:/home/yg95/ece551$ cannot change directory: No such file or directory
+    myShell:/home/yg95/ece551$
+    which is correct because "test16.txt" specifies three commands.
+    The first one is "cd". At my own discretion, I chose to design the shell
+    in a way that if no path is followed by "cd", the shell changes the directory
+    to the home directory.
+    The second one is "cd ece551". So this command will change the current directory
+    to "~/ece551".
+    The third one is "cd directoryNotExist". Since the given directory doesn't exist,
+    the shell prints an error message and refuse to change directory.
+2). Run ./myShell < testcases/test17.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ set variable a with value 1
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ 1
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ set variable a with value 123
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ 123
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ /Users/yilingao/Duke/ece551/mp_miniproject
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ invalid var name: var names can only contain letters (case sensitive), numbers and underscores
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    which is correct. "test17.txt" specifies a series of commands related to variables.
+    The first one is "set a 1". It runs successfully and prints out the finishing info.
+    The second one is "echo $a". The shell is able to replace "$a" with the actual value of
+    variable a that the previous command sets. So the shell actually "echo 1".
+    The third and fourth ones is basically reset the value of variable a and examine that.
+    The fifth is "echo $b". Because variable "b" doesn't exist in the shell, at my own
+    discretion, I designed the shell to replace its value with empty string "".
+    The sixth is "echo $PWD". This shows the shell is able to access variables within "environ".
+    The last one is "set *ab 123". This variable name is invalid, so the shell prints
+    an error message and refuses to execute it.
+3). Run ./myShell < testcases/test18.txt
+    You will see the program prints:
+    myShell:/home/yg95/ece551/mp_miniproject$ set variable a with value 1
+    myShell:/home/yg95/ece551/mp_miniproject$ XDG_SESSION_ID=31239
+    TERM=xterm-256color
+    SHELL=/bin/bash
+    SSH_CLIENT=10.197.106.56 62410 22
+    SSH_TTY=/dev/pts/36
+    USER=yg95
+    LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+    MAIL=/var/mail/yg95
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+    PWD=/home/yg95/ece551/mp_miniproject
+    EDITOR=emacs -nw
+    LANG=en_US.UTF-8
+    SHLVL=1
+    HOME=/home/yg95
+    LOGNAME=yg95
+    VISUAL=emacs -nw
+    SSH_CONNECTION=10.197.106.56 62410 152.3.77.223 22
+    LESSOPEN=| /usr/bin/lesspipe %s
+    XDG_RUNTIME_DIR=/run/user/1040
+    LESSCLOSE=/usr/bin/lesspipe %s %s
+    OLDPWD=/home/yg95/ece551/058_counts
+    _=./myShell
+    Program exited with status 0
+    myShell:/home/yg95/ece551/mp_miniproject$ export variable a with value 1
+    myShell:/home/yg95/ece551/mp_miniproject$ XDG_SESSION_ID=31239
+    TERM=xterm-256color
+    SHELL=/bin/bash
+    SSH_CLIENT=10.197.106.56 62410 22
+    SSH_TTY=/dev/pts/36
+    USER=yg95
+    LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+    MAIL=/var/mail/yg95
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+    PWD=/home/yg95/ece551/mp_miniproject
+    EDITOR=emacs -nw
+    LANG=en_US.UTF-8
+    SHLVL=1
+    HOME=/home/yg95
+    LOGNAME=yg95
+    VISUAL=emacs -nw
+    SSH_CONNECTION=10.197.106.56 62410 152.3.77.223 22
+    LESSOPEN=| /usr/bin/lesspipe %s
+    XDG_RUNTIME_DIR=/run/user/1040
+    LESSCLOSE=/usr/bin/lesspipe %s %s
+    OLDPWD=/home/yg95/ece551/058_counts
+    _=./myShell
+    a=1
+    Program exited with status 0
+    myShell:/home/yg95/ece551/mp_miniproject$ export variable b with value
+    myShell:/home/yg95/ece551/mp_miniproject$ XDG_SESSION_ID=31239
+    TERM=xterm-256color
+    SHELL=/bin/bash
+    SSH_CLIENT=10.197.106.56 62410 22
+    SSH_TTY=/dev/pts/36
+    USER=yg95
+    LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+    MAIL=/var/mail/yg95
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+    PWD=/home/yg95/ece551/mp_miniproject
+    EDITOR=emacs -nw
+    LANG=en_US.UTF-8
+    SHLVL=1
+    HOME=/home/yg95
+    LOGNAME=yg95
+    VISUAL=emacs -nw
+    SSH_CONNECTION=10.197.106.56 62410 152.3.77.223 22
+    LESSOPEN=| /usr/bin/lesspipe %s
+    XDG_RUNTIME_DIR=/run/user/1040
+    LESSCLOSE=/usr/bin/lesspipe %s %s
+    OLDPWD=/home/yg95/ece551/058_counts
+    _=./myShell
+    a=1
+    b=
+    Program exited with status 0
+    myShell:/home/yg95/ece551/mp_miniproject$ invalid var name: var names can only contain letters (case sensitive), numbers and underscores
+    myShell:/home/yg95/ece551/mp_miniproject$
+    This is correct. "test18.txt" is a series of commands about set and export variables.
+    The first one is "set a 1". This sets variable a's value to 1.
+    The second one is "env". This prints the current environment variables.
+    As we can see, without "export a", "a" is not in the list of environment variables.
+    The third one is "export a". This adds variable "a" and its value 1 into environment list.
+    The fourth one is "env" again. At this time, we should be able to see "a=1" in the list.
+    The fifth one is "export b". Because variable b is not set and doesn't exist, at my
+    own discretion, I chose to design the shell in a way that it exports empty string ""
+    for an non-exist variable.
+    The sixth one is "env". Now we could see "b=" is also in the list.
+    The seventh one is "export *ab". I designed the shell such that it doesn't allow to
+    export invalid variable name either. So the shell prints an error message and refuses to
+    execute it.
+3). Run ./myShell < testcases/test19.txt
+    You will see the program prints:
+    TODO
+
+4). Run /myShell < testcases/test20.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ /Users/yilingao/Duke/ece551/mp_miniproject
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ myShell:/Users/yilingao$ /Users/yilingao/Duke/ece551/mp_miniproject
+    Program exited with status 0
+    myShell:/Users/yilingao$ /Users/yilingao
+    Program exited with status 0
+    myShell:/Users/yilingao$
+    This is correct.
+    The first command is "echo $PWD". This gets the current directory. The output is correct.
+    The second command is "cd". As mentioned before, this command changes directory to home.
+    And in my shell when it executes "cd" related commands, it updates variables "PWD" and "OLDPWD" accordingly.
+    So the third and fourth commands are able to print the latest "PWD" and "OLDPWD" after the "cd".
+5). Run /myShell < testcases/test21.txt TODO
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ set variable PATH with value 123
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ command ls not found
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The first command updates the value of "PATH" to 123.
+    The second command is "ls". Because the shell will search for the command in all
+    directories listed in "PATH", but the "PATH" has been changed and doesn't work in this case.
+    So "ls" cannot be found and the shell refuses to execute it.
+
+4. Test Step 4
+1). Run /myShell < testcases/test22.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ #include "myShell.h"
+
+    int main(int argc, char ** argv, char ** envp) {
+      MyShell myShell;
+      while (!myShell.isExitting()) {
+        myShell.execute();
+      }
+    }
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The command in "test22.txt" is "cat < main.cpp". So it redirects the input for "cat"
+    to the file "main.cpp". And it performs as expected.
+2). Run /myShell < testcases/test23.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		out			todo.txt
+    README			commandShell.txt	myShell			myShell.h		testcases
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ #include "myShell.h"
+
+    int main(int argc, char ** argv, char ** envp) {
+      MyShell myShell;
+      while (!myShell.isExitting()) {
+        myShell.execute();
+      }
+    }
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The first command in "test23.txt" is "cat < main.cpp > out". It redirects the
+    input for "cat" to "main.cpp", and redirects the output for "cat" to "out".
+    The second command is "ls". And we can see from the result there is a file
+    called "ls" there.
+    The third command is "cat out". From the contents we can prove the first
+    command did write its output to the file "out".
+3). Run /myShell < testcases/test24.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		out			todo.txt
+    README			commandShell.txt	myShell			myShell.h		testcases
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ #include "myShell.h"
+
+    int main(int argc, char ** argv, char ** envp) {
+      MyShell myShell;
+      while (!myShell.isExitting()) {
+        myShell.execute();
+      }
+    }
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The only difference between "test24.txt" and "test23.txt" is that the order
+    of redirect changes in "test24.txt", but the effect should be same.
+    And from the output we can tell the effects are actually the same as the previous one.
+4). Run /myShell < testcases/test25.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		out			todo.txt
+    README			commandShell.txt	myShell			myShell.h		testcases
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ #include "myShell.h"
+
+    int main(int argc, char ** argv, char ** envp) {
+      MyShell myShell;
+      while (!myShell.isExitting()) {
+        myShell.execute();
+      }
+    }
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The first command in "test25.txt" is "cat < myShell.h < main.cpp > out". I designed
+    my shell such that when there are multiple input redirects, I use the last one and
+    ignores all previous input redirects. So in this case the contents in "out" should be
+    the same as "main.cpp". And this is what the output says.
+5). Run /myShell < testcases/test26.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		out1			todo.txt
+    README			commandShell.txt	myShell			myShell.h		testcases
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ #include "myShell.h"
+
+    int main(int argc, char ** argv, char ** envp) {
+      MyShell myShell;
+      while (!myShell.isExitting()) {
+        myShell.execute();
+      }
+    }
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The first command in "test26.txt" is "cat < myShell.h < main.cpp > out > out1".
+    I designed the shell such that when there are multiple output redirects, I use
+    the last one and ignores all previous output redirects. So in this case there should
+    only be a "out1" file with the same contents as "main.cpp".
+6). Run /myShell < testcases/test27.txt
+    You will see the program prints:
+    ./myShell < testcases/test27.txt
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ cat: notExist: No such file or directory
+    Program exited with status 1
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		out			testcases
+    README			commandShell.txt	myShell			myShell.h		out1			todo.txt
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The first command in "test27.txt" is "cat notExist > out". It redirects normal output,
+    but not error output. Since the file doesn't exist, "cat" will print an error message.
+    So we will see the error message in the shell, while the "out" file is empty. This is what
+    the actual output shows.
+7). Run /myShell < testcases/test28.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Program exited with status 1
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		error			myShell			myShell.h		testcases
+    README			commandShell.txt	main.cpp		myShell.cpp		out			todo.txt
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ cat: notExist: No such file or directory
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The first command in "test28.txt" is "cat notExist > out 2> error". It asks "cat" to take
+    a file that doesn't exist, and redirect output to "out" and redirect error to "error".
+    Because the file doesn't exist, "cat" will only produce error message. Although the
+    shell will create both "out" and "error", only the "error" file contains the expected
+    error message, while "out" is empty.
+8). Run /myShell < testcases/test29.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Program exited with status 1
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		out			todo.txt
+    README			commandShell.txt	myShell			myShell.h		testcases
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ cat: notExist: No such file or directory
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The first command in "test29.txt" is "cat notExist > out 2>&1". It asks "cat" to take
+    a file that doesn't exist, and redirect output to "out", and redirect error to the same
+    file as output, which is "out" too.
+    Because the file doesn't exist, "cat" will only produce error message. The shell will only
+    create file "out", and write the error message (no regular output in this case) to "out".
+9). Run /myShell < testcases/test30.txt TODO
+    You will see the program prints:
+
+10).Run /myShell < testcases/test31.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		out			todo.txt
+    README			commandShell.txt	myShell			myShell.h		testcases
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The first command in "test31.txt" is "cat myShell | cat > out". It is to pipe
+    the output of "cat myShell" to the input of "cat > out". So the shell will
+    write the contents of "myShell" into "out". Because the file size of "myShell"
+    is really large (~178072 bytes), so I didn't print out its contents here.
+    But actually it is correct.
+11).Run /myShell < testcases/test32.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		out			todo.txt
+    README			commandShell.txt	myShell			myShell.h		testcases
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The first command in "test32.txt" is "cat myShell | cat | cat | cat | cat > out".
+    Although it is multiple pipes, it should have the same output as "test31.txt".
+    And the result proves this.
+12).Run /myShell < testcases/test33.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile
+    README
+    TESTING.txt
+    commandShell.txt
+    main.cpp
+    myShell
+    myShell.cpp
+    myShell.h
+    out
+    testcases
+    todo.txt
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The command in "test33.txt" is "ls | cat". It run "ls" first, pipes the output
+    into the input of "cat". So "cat" will print the output of "ls". And this
+    is what the output suggests.
+13).Run /myShell < testcases/test34.txt TODO
+    You will see the program prints:
+
+14).Run /myShell < testcases/test35.txt TODO
+    You will see the program prints:
+
+15).Run /myShell < testcases/test36.txt TODO
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		out			todo.txt
+    README			commandShell.txt	myShell			myShell.h		testcases
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The first command in "test36.txt" is "  | ls". It pipes two commands, while the first one
+    is empty, so it should just print the result and exit status of the second piped command.
+    The second comamnd is "ls | ". So it would print no output and also no exit status.
+    I designed the shell such that for piped commands, it always print the exit status of the
+    last piped command. If the last piped command doesn't have exit status, then the shell
+    also doesn't print exit status.

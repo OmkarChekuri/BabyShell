@@ -1,0 +1,3 @@
+cat > out < main.cpp
+ls
+cat out

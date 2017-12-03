@@ -243,6 +243,7 @@ void MyShell::runCdCommand() {
     error = true;
   } else {
     char cwd[1024];
+    setVar("OLDPWD", vars["PWD"]);
     setenv("OLDPWD", vars["PWD"].c_str(), 1);
     setVar("PWD", getcwd(cwd, sizeof(cwd))); // get absolute working path in the case
     setenv("PWD", vars["PWD"].c_str(), 1);

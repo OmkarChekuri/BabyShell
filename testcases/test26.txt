@@ -1,0 +1,3 @@
+cat < myShell.h < main.cpp > out > out1
+ls
+cat out1

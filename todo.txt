@@ -64,3 +64,10 @@ myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ echo $PATH
 Program exited with status 0
 
 not change variable value
+
+
+15. space before cd, exit...
+
+16. myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ cat < a
+cat: stdin: Bad file descriptor
+Program exited with status 1

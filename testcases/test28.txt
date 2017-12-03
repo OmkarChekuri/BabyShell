@@ -1,0 +1,4 @@
+cat notExist > out 2> error
+ls
+cat out
+cat error

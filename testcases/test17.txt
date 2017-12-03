@@ -1,0 +1,7 @@
+set a 1
+echo $a
+set a 123
+echo $a
+echo $b
+echo $PWD
+set *ab 123

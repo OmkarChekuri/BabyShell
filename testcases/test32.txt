@@ -1,0 +1,2 @@
+cat myShell | cat | cat | cat | cat > out
+ls
