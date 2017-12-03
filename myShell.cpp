@@ -22,7 +22,7 @@ extern char ** environ;
 /**
  * a valid variable name can only contain upper and lower letters, numbers, and underscores
  **/
-bool validateVarName(std::string & var) {
+bool validateVarName(std::string var) {
   for (std::string::iterator it = var.begin(); it != var.end(); it++) {
     if (!isalnum(*it) && *it != '_') return false;
   }
@@ -70,6 +70,37 @@ std::vector<std::string> splitPath(const std::string & paths) {
  **/
 void MyShell::setVar(std::string key, std::string value) {
   vars[key] = value;
+}
+
+/**
+ * evaluate any variable names MyShell::input
+ * variable names are started with '$' and lasts as long as it is still a valid var name
+ * if the variable exists, replace it with its value
+ * if the variable doesn't exist, replace the variable name with ""
+ **/
+void MyShell::evaluateVars() {
+  std::string new_input;
+  for (std::size_t i = 0; i < input.length(); ) {
+    if (input[i] != '$') {
+      new_input.push_back(input[i]);
+      i++;
+    } else {
+      std::size_t start = i + 1;
+      std::size_t len = 0;
+      while (start + len < input.length() && validateVarName(input.substr(start, len + 1))) {
+        len++;
+      }
+      std::string var_name = input.substr(start, len);
+      std::string var_value = "";
+      std::map<std::string, std::string>::iterator it = vars.find(var_name);
+      if (it != vars.end()) {
+        var_value = it -> second;
+      }
+      new_input.append(var_value);
+      i = start + len;
+    }
+  }
+  input = new_input;
 }
 
 /**
@@ -131,54 +162,6 @@ void MyShell::parseCommand() {
     }
   }
   piped_commands[curr_command_index] = modified_curr_command;
-  evaluateVars();
-}
-
-/**
- * for each parsed command component (command itself or argument) in MyShell::commands
- * if it contains one or more variable (has $),
- * replace the variable name with the actual variable value
- * if the variable doesn't exist, replace the variable name with " "
- **/
-void MyShell::evaluateVars() {
-  for (std::vector<std::string>::iterator it = commands.begin(); it != commands.end(); it++) {
-    if (it->find('$') == std::string::npos) continue;
-    std::string curr = *it;
-    std::string updated_curr = "";
-    int begin = -1;
-    for (std::size_t i = 0; i < curr.length(); i++) {
-      if (curr[i] == '$') {
-        if (begin == -1) {
-          begin = i;
-        } else {
-          std::string var = curr.substr(begin + 1, i);
-          begin = i;
-          std::map<std::string, std::string>::iterator varsit = vars.find(var);
-          if (varsit != vars.end()) { // find the variable, replace value
-            var = varsit -> second;
-          } else { // cannot find
-            var = " ";
-          }
-          updated_curr.append(var);
-        }
-      } else {
-        if (begin == -1) {
-          updated_curr.push_back(curr[i]);
-        }
-      }
-    }
-    if (begin != -1) {
-      std::string var = curr.substr(begin + 1);
-      std::map<std::string, std::string>::iterator varsit = vars.find(var);
-      if (varsit != vars.end()) { // find the variable, replace value
-        var = varsit -> second;
-      } else { // cannot find
-        var = " ";
-      }
-      updated_curr.append(var);
-    }
-    *it = updated_curr;
-  }
 }
 
 /**
@@ -325,8 +308,7 @@ void MyShell::configCommandRedirect() {
       if (curr.length() == 1) { // curr == "<"
         if (it + 1 == commands.end()) {
           std::cerr << "incorrect input format: < requires an input file" << std::endl;
-          error = true;
-          return;
+          exit(EXIT_FAILURE);
         } else {
           input_filename = *(it + 1);
           commands.erase(it);
@@ -340,8 +322,7 @@ void MyShell::configCommandRedirect() {
       if (curr.length() == 1) { // curr == ">"
         if (it + 1 == commands.end()) {
           std::cerr << "incorrect input format: > requires an output file" << std::endl;
-          error = true;
-          return;
+          exit(EXIT_FAILURE);
         } else {
           output_filename = *(it + 1);
           commands.erase(it);
@@ -355,8 +336,7 @@ void MyShell::configCommandRedirect() {
       if (curr.length() == 2) { // curr == "2>"
         if (it + 1 == commands.end()) {
           std::cerr << "incorrect input format: 2< requires an output file" << std::endl;
-          error = true;
-          return;
+          exit(EXIT_FAILURE);
         } else {
           error_filename = *(it + 1);
           commands.erase(it);
@@ -377,8 +357,7 @@ void MyShell::configCommandRedirect() {
   if (!input_filename.empty()) {
     if (curr_command_index != 0) { // only the first piped command can redirect stdin
       std::cerr << "cannot redirect stdin for a non-head command in pipe" << std::endl;
-      error = true;
-      return;
+      exit(EXIT_FAILURE);
     }
     close(0);
     open(input_filename.c_str(), O_RDONLY);
@@ -386,15 +365,14 @@ void MyShell::configCommandRedirect() {
   if (!output_filename.empty()) {
     if (curr_command_index != piped_commands.size() - 1) { // only the last piped command can redirect stdout
       std::cerr << "cannot redirect stdout for a non-end command in pipe" << std::endl;
-      error = true;
-      return;
+      exit(EXIT_FAILURE);
     }
     close(1);
-    open(output_filename.c_str(), O_WRONLY | O_CREAT, 0666); // set file permission
+    open(output_filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666); // set file permission
   }
   if (!error_filename.empty()) {
     close(2);
-    open(error_filename.c_str(), O_WRONLY | O_CREAT, 0666);
+    open(error_filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
   }
 }
 
@@ -409,26 +387,21 @@ void MyShell::configCommandPipe() {
     // close fd 0 for stdin, and redirect pipe R end to fd 0
     if (dup2(pipefd[2 * (curr_command_index - 1)], 0) < 0) {
       std::cerr << "failed to redirect stdin: " << std::strerror(errno) << std::endl;
-      error = true;
-      return;
-      // exit(EXIT_FAILURE);
+      exit(EXIT_FAILURE);
     }
   }
   if (curr_command_index != num_commands - 1) { // not the last command
     // close fd 1 for stdout, and redirect pipe W end to fd 1
     if (dup2(pipefd[2 * curr_command_index + 1], 1) < 0) {
       std::cerr << "failed to redirect stdout: " << std::strerror(errno) << std::endl;
-      error = true;
-      return;
-      // exit(EXIT_FAILURE);
+      exit(EXIT_FAILURE);
     }
   }
   // close all pipe fds, only use the new 0 and 1 for read and write
   for (std::size_t i = 0; i < 2 * num_pipes; i++) {
     if (close(pipefd[i]) < 0) {
       std::cerr << "failed to close pipes: " << std::strerror(errno) << std::endl;
-      error = true;
-      return;
+      exit(EXIT_FAILURE);
     }
   }
 }
@@ -587,6 +560,7 @@ void MyShell::execute() {
   } else if (std::cin.fail() || std::cin.bad()) {
     std::cin.clear();
   } else { // std::cin is good, valid input
+    evaluateVars(); // evaluate vars in input first
     parsePipedInput();
     if (error) return;
     runPipedCommands();

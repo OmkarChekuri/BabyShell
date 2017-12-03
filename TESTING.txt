@@ -284,7 +284,25 @@
     execute it.
 3). Run ./myShell < testcases/test19.txt
     You will see the program prints:
-    TODO
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ set variable a with value 1
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ 11
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ 1....1
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The first command is "set a 1".
+    The second comamnd is "echo $a1". According to the rule of variable replacement,
+    the shell regards "a1" as the variable name. Because this variable doesn't exist
+    in the shell, the shell replaces it with "". So the echo result it "".
+    The third command is "echo 1$a". According to the rule of variable replacement,
+    the shell regards "a" as the variable name, and replaces it with its value "1".
+    So the echo result is "11".
+    The last command is "echo $a....$a". The first variable the shell finds is "a",
+    and it replaces it with 1. The second variable name the shell finds is also "a",
+    and it replaces it with 1. So the echo result is "1....1".
 
 4). Run /myShell < testcases/test20.txt
     You will see the program prints:
@@ -300,16 +318,24 @@
     The second command is "cd". As mentioned before, this command changes directory to home.
     And in my shell when it executes "cd" related commands, it updates variables "PWD" and "OLDPWD" accordingly.
     So the third and fourth commands are able to print the latest "PWD" and "OLDPWD" after the "cd".
-5). Run /myShell < testcases/test21.txt TODO
+5). Run /myShell < testcases/test21.txt
     You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ set variable PATH with value /Users/yilingao/application/spark/spark-1.6.0-bin-hadoop2.6/bin:/Users/yilingao/application/spark/spark-1.6.0-bin-hadoop2.6/ec2:/Users/yilingao/application/sbt/sbt-1.0.2/bin:/Users/yilingao/application/spark/spark-1.6.0-bin-hadoop2.6/bin:/Users/yilingao/application/spark/spark-1.6.0-bin-hadoop2.6/ec2:/Users/yilingao/application/sbt/sbt-1.0.2/bin:/usr/local/opt/node@6/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/TeX/texbin:/Users/yilingao/Library/Android/sdk/tools:/Users/yilingao/Library/Android/sdk/platform_tools:/test
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		out			todo.txt
+    README			commandShell.txt	myShell			myShell.h		testcases
+    Program exited with status 0
     myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ set variable PATH with value 123
     myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ command ls not found
     myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
     This is correct.
-    The first command updates the value of "PATH" to 123.
+    The first command updates the value of "PATH" to "$PATH:/test". The shell will
+    evaluate the variable name "PATH" to its actual value, and replace it.
     The second command is "ls". Because the shell will search for the command in all
-    directories listed in "PATH", but the "PATH" has been changed and doesn't work in this case.
-    So "ls" cannot be found and the shell refuses to execute it.
+    directories listed in "PATH", and "ls" is in "/bin", which is in "PATH", so
+    the "ls" program can be executed successfully.
+    The third command updates the value of "PATH" to "123".
+    The fourth command is "ls". Because now "PATH" has been changed, "ls" cannot
+    be found and the shell refuses to execute it.
 
 4. Test Step 4
 1). Run /myShell < testcases/test22.txt
@@ -327,6 +353,20 @@
     This is correct.
     The command in "test22.txt" is "cat < main.cpp". So it redirects the input for "cat"
     to the file "main.cpp". And it performs as expected.
+1') Run /myShell < testcases/test22_2.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ incorrect input format: < requires an input file
+    Program exited with status 1
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ incorrect input format: > requires an output file
+    Program exited with status 1
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ incorrect input format: 2< requires an output file
+    Program exited with status 1
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    I designed the shell such that if a redirect sign ">", "<", or "2>" is not followed by
+    the corresponding file, the entire command input fails, and prints an error message.
+    The three commands in "test22_2.txt" are "cat <", "cat README >", and "cat README 2>".
+    So according to the syntax rule they should all fail.
 2). Run /myShell < testcases/test23.txt
     You will see the program prints:
     myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Program exited with status 0
@@ -458,9 +498,26 @@
     file as output, which is "out" too.
     Because the file doesn't exist, "cat" will only produce error message. The shell will only
     create file "out", and write the error message (no regular output in this case) to "out".
-9). Run /myShell < testcases/test30.txt TODO
+9). Run /myShell < testcases/test30.txt
     You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		out			todo.txt
+    README			commandShell.txt	myShell			myShell.h		testcases
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ #include "myShell.h"
 
+    int main(int argc, char ** argv, char ** envp) {
+      MyShell myShell;
+      while (!myShell.isExitting()) {
+        myShell.execute();
+      }
+    }
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The first command in "test30.txt" is "cat <main.cpp >out 2>&1". It's different from the one
+    in "test29.txt" in that there is no space between ">"/"<" and the file name. I designed
+    the shell such that both input syntax have same effect.
 10).Run /myShell < testcases/test31.txt
     You will see the program prints:
     myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Program exited with status 0
@@ -504,9 +561,19 @@
     The command in "test33.txt" is "ls | cat". It run "ls" first, pipes the output
     into the input of "cat". So "cat" will print the output of "ls". And this
     is what the output suggests.
-13).Run /myShell < testcases/test34.txt TODO
+13).Run /myShell < testcases/test34.txt
     You will see the program prints:
-
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ cannot redirect stdout for a non-end command in pipe
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		out			todo.txt
+    README			commandShell.txt	myShell			myShell.h		testcases
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    I designed the shell such that only the first piped command can redirect input, and
+    only the last piped command can redirect output. Otherwise all piped commands fail.
+    The command in "test34.txt" is "cat README | cat > out | cat". According to the syntax,
+    it should fail and report error.
 14).Run /myShell < testcases/test35.txt TODO
     You will see the program prints:
 

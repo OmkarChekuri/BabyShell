@@ -1,2 +1,4 @@
 set a 1
-echo a1
+echo $a1
+echo 1$a
+echo $a....$a

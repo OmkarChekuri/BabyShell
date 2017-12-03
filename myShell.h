@@ -16,9 +16,9 @@ private:
   std::size_t num_child_processes; // number of child processes forked
   std::map<std::string, std::string> vars; // internal map of Shell variables and values
   void setVar(std::string key, std::string value);
+  void evaluateVars();
   void parsePipedInput();
   void parseCommand();
-  void evaluateVars();
   bool searchCommand();
   void runExitCommands();
   void runCdCommand();
