@@ -1,4 +1,28 @@
 ## Mini-Project Option: Command Shell
+ 
+### For Users
+
+```
+$ git clone git@github.com:YilinGao/BabyShell.git
+$ cd BabyShell
+$ ./myShell
+```
+
+Then the shell program is running in your shell, and you can type its supported commands and play with it.
+
+### For Developers
+
+If you want to make changes to the program:
+
+```
+$ git clone git@github.com:YilinGao/BabyShell.git
+$ cd BabyShell
+$ emacs myShell.h
+$ emacs myShell.cpp
+$ emacs main.cpp
+$ make
+$ ./myShell
+```
 
 ### Shell Function Requirement
 
@@ -79,27 +103,3 @@ For this steps, you will improve your handling of commands in two ways:
   NOTE: It is very easy to write a broken implementation of pipes which LOOKS like it works on short input (< 65536 bytes), but deadlocks on longer input. Your implementation must work correctly when sending large amounts of data through the pipe for full credit.
   
   Using `fcntl` with `F_SETPIPE_SZ` to adjust the kernel buffer size to "larger than you think we will test with" is NOT a valid approach. If I see you trying to do this, you will get no credit for part 4.
-  
-### For Users
-
-```
-$ git clone git@github.com:YilinGao/BabyShell.git
-$ cd BabyShell
-$ ./myShell
-```
-
-Then the shell program is running in your shell, and you can type its supported commands and play with it.
-
-### For Developers
-
-If you want to make changes to the program:
-
-```
-$ git clone git@github.com:YilinGao/BabyShell.git
-$ cd BabyShell
-$ emacs myShell.h
-$ emacs myShell.cpp
-$ emacs main.cpp
-$ make
-$ ./myShell
-```
