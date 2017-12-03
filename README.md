@@ -38,6 +38,7 @@ For this steps, you will improve your handling of commands in two ways:
   If the path name does contain a "/" in it, you should only look in the specified directory (which may not be on the `PATH` at all).  Note that a path with a "/" in it could be relative (.e.g, ./myProgram) or absolute (e.g. /bin/ls).
 
   * Commands can take arguments (separated by white spaces)
+  
   You should also make commands such that they can take arguments separated by white space. For example, `./myProgram a b 23` runs myProgram with arguments `a`, `b` and `23`. here may be an arbitrary amount of whitespace in between arguments, so `./myProgram         a               b     23` has the same behavior as the previous example. However, any white space which is escaped with a "\" should be literally included in the argument, and not used as a separator: `./myProgram  a\ b c\ \ d` should run myProgram with two arguments "a b" and "c  d". Note that `./myProgram a\  b c \ d`  would have arguments "a " "b" "c" and " d", as the non-escaped spaces separate arguments.
 
 
@@ -48,22 +49,30 @@ For this steps, you will improve your handling of commands in two ways:
   * If the user writes $varname on the command line, your shell should replace it with the current value of that variable.
   * You should provide two built in commands:
     * `set var value`
-      This should set the variable var to the string on the rest of the command line [even if it contains spaces, etc]. Your shell should remember this value, and make use of it in future $ evaluations, however, it should not be placed in the environment for other programs.
+    
+    This should set the variable var to the string on the rest of the command line [even if it contains spaces, etc]. Your shell should remember this value, and make use of it in future $ evaluations, however, it should not be placed in the environment for other programs.
     * `export var`
-      This should put the current value of var into the environment for other programs.
-   Note that you may find the `env` command useful for testing this: if you `set` a variable (but don't `export` it) the new value should not show up in `env`, while if you `export` it, the new value should show up in `env`.
+    
+    This should put the current value of var into the environment for other programs.
+    
+  Note that you may find the `env` command useful for testing this: if you `set` a variable (but don't `export` it) the new value should not show up in `env`, while if you `export` it, the new value should show up in `env`.
 
-   Note also that if the user changes `PATH`, it should affect where your shell searches for programs.
+  Note also that if the user changes `PATH`, it should affect where your shell searches for programs.
 
 4. Pipes and redirection
   * Implement input redirection (<) and output redirection (>)
+  
      `< filename`   redirects standard input for the command
+     
      `> filename`   redirects standard output
+     
      `2> filename`  redirects standard error
+     
    Note that you will need to implement these between the `fork()` and `execve()` calls.  You will need to make use of `close()` on the relevant file descriptors (0 = stdin, 1 = stdout, 2 = stderr) use `open()` to open the appropriate file. You may also need to make use of `dup2()`.
 
   * Implement pipes (|)
-   You should be able to run one command and pipe its output to another's input: `./myProgram | ./anotherProgram`. See the `pipe()` system call.
+  
+  You should be able to run one command and pipe its output to another's input: `./myProgram | ./anotherProgram`. See the `pipe()` system call.
 
   Note that you need to be able to mix and match these in ways that make sense, along with having command line arguments: `./myProgram a b c < anInputFile | ./anotherProgram 23 45 > someOutputFile`.
 
