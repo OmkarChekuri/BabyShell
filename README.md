@@ -1,4 +1,4 @@
-## Mini-Project Option: Command Shell
+## Duke ECE 551 2017 Fall Mini-Project: Command Shell
  
 ### For Users
 
