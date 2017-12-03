@@ -1,0 +1,2 @@
+cat < nonExist > out 2>&1
+ls

@@ -211,7 +211,6 @@ void MyShell::runExitCommands() {
  * 1 argument: cd to the given argument if it exists
  **/
 void MyShell::runCdCommand() {
-  // configCommandPipe();
   if (commands.size() > 2) {
     std::cerr << "too many arguments for cd" << std::endl;
     error = true;
@@ -360,7 +359,10 @@ void MyShell::configCommandRedirect() {
       exit(EXIT_FAILURE);
     }
     close(0);
-    open(input_filename.c_str(), O_RDONLY);
+    if (open(input_filename.c_str(), O_RDONLY, 0) < 0) {
+      std::cerr << "cannot open the redirect input file: " << std::strerror(errno) << std::endl;
+      exit(EXIT_FAILURE);
+    }
   }
   if (!output_filename.empty()) {
     if (curr_command_index != piped_commands.size() - 1) { // only the last piped command can redirect stdout
@@ -368,11 +370,18 @@ void MyShell::configCommandRedirect() {
       exit(EXIT_FAILURE);
     }
     close(1);
-    open(output_filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666); // set file permission
+    // set file permission
+    if (open(output_filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666)) {
+      std::cerr << "cannot open the redirect output file: " << std::strerror(errno) << std::endl;
+      exit(EXIT_FAILURE);
+    }
   }
   if (!error_filename.empty()) {
     close(2);
-    open(error_filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    if (open(error_filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666)) {
+      std::cerr << "cannot open the redirect error file: " << std::strerror(errno) << std::endl;
+      exit(EXIT_FAILURE);
+    }
   }
 }
 
@@ -380,21 +389,25 @@ void MyShell::configCommandRedirect() {
  * in a child process
  * config its pipe input and output
  **/
-void MyShell::configCommandPipe() {
+void MyShell::configCommandPipe(bool redirect_input = true, bool redirect_output = true) {
   std::size_t num_commands = piped_commands.size();
-  std::size_t num_pipes = piped_commands.size() - 1;
-  if (curr_command_index != 0) { // not the first command
-    // close fd 0 for stdin, and redirect pipe R end to fd 0
-    if (dup2(pipefd[2 * (curr_command_index - 1)], 0) < 0) {
-      std::cerr << "failed to redirect stdin: " << std::strerror(errno) << std::endl;
-      exit(EXIT_FAILURE);
+  std::size_t num_pipes = num_commands - 1;
+  if (redirect_input) {
+    if (curr_command_index != 0) { // not the first command
+      // close fd 0 for stdin, and redirect pipe R end to fd 0
+      if (dup2(pipefd[2 * (curr_command_index - 1)], 0) < 0) {
+        std::cerr << "failed to redirect stdin: " << std::strerror(errno) << std::endl;
+        exit(EXIT_FAILURE);
+      }
     }
   }
-  if (curr_command_index != num_commands - 1) { // not the last command
-    // close fd 1 for stdout, and redirect pipe W end to fd 1
-    if (dup2(pipefd[2 * curr_command_index + 1], 1) < 0) {
-      std::cerr << "failed to redirect stdout: " << std::strerror(errno) << std::endl;
-      exit(EXIT_FAILURE);
+  if (redirect_output) {
+    if (curr_command_index != num_commands - 1) { // not the last command
+      // close fd 1 for stdout, and redirect pipe W end to fd 1
+      if (dup2(pipefd[2 * curr_command_index + 1], 1) < 0) {
+        std::cerr << "failed to redirect stdout: " << std::strerror(errno) << std::endl;
+        exit(EXIT_FAILURE);
+      }
     }
   }
   // close all pipe fds, only use the new 0 and 1 for read and write
@@ -452,7 +465,7 @@ void MyShell::closePipes() {
   int num_pipes = piped_commands.size() - 1;
   for (int i = 0; i < 2 * num_pipes; i++) {
     if (close(pipefd[i]) < 0) {
-      std::cerr << "failed to close pipes: " << std::strerror(errno) << std::endl;
+      std::cerr << "failed to close pipe " << i << ": " << std::strerror(errno) << std::endl;
       error = true;
       return;
     }

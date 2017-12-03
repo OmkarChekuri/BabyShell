@@ -66,8 +66,10 @@ Program exited with status 0
 not change variable value
 
 
-15. space before cd, exit...
+15. (solved) space before cd, exit...
 
-16. myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ cat < a
+16. (partly solved) myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ cat < a
 cat: stdin: Bad file descriptor
 Program exited with status 1
+
+the file doesn't exist, cannot open, open error TODO

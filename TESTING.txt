@@ -498,6 +498,19 @@
     file as output, which is "out" too.
     Because the file doesn't exist, "cat" will only produce error message. The shell will only
     create file "out", and write the error message (no regular output in this case) to "out".
+8.1)Run /myShell < testcases/test29_2.txt
+    You will see the program prints:
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ cannot open the redirect output file: Invalid argument
+    Program exited with status 1
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Makefile		TESTING.txt		main.cpp		myShell.cpp		out			todo.txt
+    README			commandShell.txt	myShell			myShell.h		testcases
+    Program exited with status 0
+    myShell:/Users/yilingao/Duke/ece551/mp_miniproject$
+    This is correct.
+    The first command in "test29_2.txt" is "cat < nonExist > out 2>&1".
+    The redirect input file doesn't exist. I designed the shell such that in this case
+    the shell should print an error about this and not moving forward executing the command.
+    The print output suggests the shell works in this way.
 9). Run /myShell < testcases/test30.txt
     You will see the program prints:
     myShell:/Users/yilingao/Duke/ece551/mp_miniproject$ Program exited with status 0

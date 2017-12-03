@@ -25,7 +25,7 @@ private:
   void runSetCommand();
   void runExportCommand();
   void configCommandRedirect();
-  void configCommandPipe();
+  void configCommandPipe(bool redirect_input, bool redirect_output);
   void runCommand();
   void createPipes();
   void closePipes();
