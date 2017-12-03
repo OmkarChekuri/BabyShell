@@ -1,5 +1,9 @@
 ## Duke ECE 551 2017 Fall Mini-Project: Command Shell
  
+### For Future Duke ECE 551 Students
+
+Just close the page RIGHT NOW! You didn't find it! Don't read one word from it before your project deadline!
+
 ### For Users
 
 ```
