@@ -4,7 +4,7 @@
 
 For this mini-project you will write a "baby" command shell.
 
-1. Read a command name, run it
+1. **Read a command name, run it**
 
 You should write a program called "myShell".
 
@@ -26,7 +26,7 @@ Then your shell should print the `myShell$` prompt again, and repeat the process
 
 If the user types the command `exit`, or `EOF` is encountered reading from stdin, then the shell should exit.
 
-2. Improving commands
+2. **Improving commands**
   
 For this steps, you will improve your handling of commands in two ways:
   * Search the PATH environment variable for commands
@@ -42,7 +42,7 @@ For this steps, you will improve your handling of commands in two ways:
   You should also make commands such that they can take arguments separated by white space. For example, `./myProgram a b 23` runs myProgram with arguments `a`, `b` and `23`. here may be an arbitrary amount of whitespace in between arguments, so `./myProgram         a               b     23` has the same behavior as the previous example. However, any white space which is escaped with a "\" should be literally included in the argument, and not used as a separator: `./myProgram  a\ b c\ \ d` should run myProgram with two arguments "a b" and "c  d". Note that `./myProgram a\  b c \ d`  would have arguments "a " "b" "c" and " d", as the non-escaped spaces separate arguments.
 
 
-3. Directories and Variables
+3. **Directories and Variables**
   * Add the `cd` command to change the current directory. See the `chdir` function.
   * The prompt should show the current directory before the $. That is, if your current directory is `/home/drew`, the prompt should be `myShell:/home/drew $`.
   * Your shell should provide access to variables. A variable name must be a combination of letters (case sensitive), underscores, and numbers, (e.g., PATH, xyz, abc42, my_var).
@@ -59,7 +59,7 @@ For this steps, you will improve your handling of commands in two ways:
 
   Note also that if the user changes `PATH`, it should affect where your shell searches for programs.
 
-4. Pipes and redirection
+4. **Pipes and redirection**
   * Implement input redirection (<) and output redirection (>)
   
      `< filename`   redirects standard input for the command
@@ -79,3 +79,27 @@ For this steps, you will improve your handling of commands in two ways:
   NOTE: It is very easy to write a broken implementation of pipes which LOOKS like it works on short input (< 65536 bytes), but deadlocks on longer input. Your implementation must work correctly when sending large amounts of data through the pipe for full credit.
   
   Using `fcntl` with `F_SETPIPE_SZ` to adjust the kernel buffer size to "larger than you think we will test with" is NOT a valid approach. If I see you trying to do this, you will get no credit for part 4.
+  
+### For Users
+
+```
+$ git clone git@github.com:YilinGao/BabyShell.git
+$ cd BabyShell
+$ ./myShell
+```
+
+Then the shell program is running in your shell, and you can type its supported commands and play with it.
+
+### For Developers
+
+If you want to make changes to the program:
+
+```
+$ git clone git@github.com:YilinGao/BabyShell.git
+$ cd BabyShell
+$ emacs myShell.h
+$ emacs myShell.cpp
+$ emacs main.cpp
+$ make
+$ ./myShell
+```
