@@ -3,9 +3,12 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <map>
 
 class MyShell {
 private:
+  typedef void (MyShell::*Command_Function_Pointer)();
+  std::map<std::string, Command_Function_Pointer> command_map;
   bool error; // if any error occurs in previous steps
   bool exitting; // if the shell will exit in the next step
   std::string input; // initial one-line user input
