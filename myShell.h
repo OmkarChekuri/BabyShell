@@ -8,7 +8,7 @@
 class MyShell {
 private:
   typedef void (MyShell::*Command_Function_Pointer)();
-  std::map<std::string, Command_Function_Pointer> command_map;
+  static std::map<std::string, MyShell::Command_Function_Pointer> COMMAND_MAP;
   bool error; // if any error occurs in previous steps
   bool exitting; // if the shell will exit in the next step
   std::string input; // initial one-line user input
