@@ -212,7 +212,7 @@ bool MyShell::searchCommand() {
  * set the boolean variable exitting to true
  **/
 void MyShell::runExitCommands() {
-  // configCommandPipe();
+  // configCommandPipe(false, false);
   exitting = true;
 }
 
@@ -228,6 +228,7 @@ void MyShell::runCdCommand() {
     error = true;
     return;
   }
+  // configCommandPipe(false, false);
   std::string dest = getenv("HOME");
   if (commands.size() == 2) {
     dest = commands[1];
@@ -250,7 +251,6 @@ void MyShell::runCdCommand() {
  * and there are a set of rules for valid variable name, refer to document
  **/
 void MyShell::runSetCommand() {
-  // configCommandPipe();
   if (commands.size() < 3) {
     std::cerr << "too few arguments for set: " << commands.size() << std::endl;
     error = true;
@@ -261,6 +261,7 @@ void MyShell::runSetCommand() {
     error = true;
     return;
   }
+  // configCommandPipe(false, false);
   std::size_t setPos = input.find(commands[0]); // the starting index of substr "set"
   std::size_t varPos = input.find(commands[1], setPos + commands[0].length()); // the start index of var name, with a valid var name, find won't have strange behavior
   std::size_t valPos = varPos + commands[1].length() + 1; // in this case, the starting index of value is one space after var name
@@ -529,6 +530,7 @@ void MyShell::runPipedCommands() {
       commands.clear();
     }
   }
+  // order is important here, parent should first close pipes and then wait for child processes
   closePipes();
   waitForChildProcesses();
   delete[] pipefd;

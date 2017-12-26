@@ -9,7 +9,7 @@ class MyShell {
 private:
   typedef void (MyShell::*Command_Function_Pointer)();
   static std::map<std::string, MyShell::Command_Function_Pointer> COMMAND_MAP;
-  bool error; // if any error occurs in previous steps
+  bool error; // if any error occurs in previous steps, used in the parent process, if any error occurs in a child process, the child one just exits
   bool exitting; // if the shell will exit in the next step
   std::string input; // initial one-line user input
   std::vector<std::string> piped_commands; // piped commands in user input
