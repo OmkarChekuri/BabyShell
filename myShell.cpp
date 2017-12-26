@@ -15,6 +15,7 @@
 #include <fcntl.h>
 
 extern char ** environ;
+
 /********************************/
 /**********HELPER FUNCTIONS******/
 /********************************/
@@ -496,21 +497,17 @@ void MyShell::runPipedCommands() {
     if (error) break; // if error occur during parsing comamnd, stop
     if (!commands.empty()) { // if the command is not empty
       std::string command_name = commands[0];
-      if (command_name.compare("exit") == 0) {
-  	    runExitCommands();
-      } else if (command_name.compare("cd") == 0) {
-        runCdCommand();
-      } else if (command_name.compare("set") == 0) {
-       runSetCommand();
-      } else if (command_name.compare("export") == 0) {
-        runExportCommand();
-      } else {
-      	if (searchCommand()) { // command exists
+      std::map<std::string, Command_Function_Pointer>::iterator it = command_map.find(command_name);
+      if (it == command_map.end()) { // normal command
+        if (searchCommand()) { // command exists
           runCommand();
         } else {
           std::cerr << "command " << commands[0] << " not found" << std::endl;
           error = true;
         }
+      } else { // one of the 4 special commands
+        Command_Function_Pointer cfp = it->second;
+        (this->*cfp)();
       }
       commands.clear();
     }
@@ -551,6 +548,10 @@ MyShell::MyShell(): error(false), exitting(false), curr_command_index(0), num_ch
     std::size_t equal_index = curr_env.find('=');
     setVar(curr_env.substr(0, equal_index), curr_env.substr(equal_index + 1));
   }
+  command_map.insert(std::make_pair("exit", &MyShell::runExitCommands));
+  command_map.insert(std::make_pair("cd", &MyShell::runCdCommand));
+  command_map.insert(std::make_pair("set", &MyShell::runSetCommand));
+  command_map.insert(std::make_pair("export", &MyShell::runExportCommand));
 }
 
 /**
