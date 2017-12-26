@@ -383,11 +383,17 @@ void MyShell::configCommandRedirect() {
     }
     close(1);
     // set file permission
-    open(output_filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    if (open(output_filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666) < 0) {
+      std::cerr << "cannot open the redirect output file: " << std::strerror(errno) << std::endl;
+      exit(EXIT_FAILURE);
+    }
   }
   if (!error_filename.empty()) {
     close(2);
-    open(error_filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    if (open(error_filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666) < 0) {
+      std::cerr << "cannot open the redirect error file: " << std::strerror(errno) << std::endl;
+      exit(EXIT_FAILURE);
+    }
   }
 }
 
