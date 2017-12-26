@@ -23,6 +23,7 @@ $ emacs main.cpp
 $ make
 $ ./myShell
 ```
+The program requires to be compiled with C++ 11.
 
 ### Shell Function Requirement
 
