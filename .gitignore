@@ -34,3 +34,7 @@
 # OSX
 #
 .DS_Store
+
+
+# ai files
+*.ai
