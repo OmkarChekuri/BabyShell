@@ -1,6 +1,6 @@
 ## Duke ECE 551 2017 Fall Mini-Project: Command Shell
 
-![icon](shell_icon.png)
+<img src="shell_icon.png" alt="icon" style="width: 50px;"/>
 
 ### For Users
 
